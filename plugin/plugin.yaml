@@ -1,0 +1,24 @@
+name: opencode
+version: 0.1.0
+description: Drive an opencode coding-agent server from AnotherMe - sessions and prompts from any browser.
+author: Matous Vavra
+entrypoint: plugin
+capabilities:
+  - routes
+  - ui
+ui:
+  tab: OpenCode
+  icon: vault
+  order: 60
+  component: false
+settings:
+  - key: base_url
+    label: Server URL
+    type: text
+    default: http://opencode:4096
+    description: Base URL of the opencode server sidecar (opencode serve)
+  - key: password
+    label: Server password
+    type: text
+    default: ""
+    description: OPENCODE_SERVER_PASSWORD of the sidecar (optional - internal docker networks can stay open)

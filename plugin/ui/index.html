@@ -1,0 +1,73 @@
+<div class="oc-wrap" x-data="opencodeTab()">
+    <template x-if="connected === false">
+        <div class="empty-state oc-offline">
+            <p>opencode server is not reachable.</p>
+            <p class="oc-hint">Start the <code>opencode</code> service (docker compose) and check
+                the plugin settings (Server URL).</p>
+        </div>
+    </template>
+
+    <template x-if="connected !== false">
+        <div class="oc-layout">
+            <aside class="oc-sessions">
+                <button class="oc-new-btn" @click="newSession()">+ New session</button>
+                <div class="oc-session-list">
+                    <template x-for="s in sessions" :key="s.id">
+                        <div class="oc-session-item" :class="{active: s.id === currentId}"
+                             @click="openSession(s.id)">
+                            <span class="oc-session-title" x-text="s.title || s.id"></span>
+                            <span class="oc-status-dot"
+                                  :class="statuses[s.id] && statuses[s.id].event ? 'busy' : 'idle'"></span>
+                        </div>
+                    </template>
+                    <div class="oc-empty" x-show="!sessions.length">No sessions yet.</div>
+                </div>
+            </aside>
+
+            <main class="oc-main">
+                <template x-if="!currentId">
+                    <div class="empty-state"><p>Pick or create a session.</p></div>
+                </template>
+
+                <template x-if="currentId">
+                    <div class="oc-chat">
+                        <div class="oc-messages" x-ref="messages">
+                            <template x-for="m in messages" :key="m.info.id">
+                                <div class="oc-msg" :class="m.info.role">
+                                    <template x-for="(p, i) in renderableParts(m)" :key="m.info.id + '-' + i">
+                                        <div class="oc-part">
+                                            <template x-if="p.type === 'text'">
+                                                <div class="oc-bubble" x-html="md(p.text)"></div>
+                                            </template>
+                                            <template x-if="p.type === 'tool'">
+                                                <details class="oc-tool">
+                                                    <summary><span class="oc-tool-name" x-text="toolName(p)"></span></summary>
+                                                    <pre x-text="toolDetail(p)"></pre>
+                                                </details>
+                                            </template>
+                                            <template x-if="p.type === 'file'">
+                                                <div class="oc-file" x-text="fileLabel(p)"></div>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                            <div class="oc-busy" x-show="isBusy">
+                                <span class="oc-spinner"></span> agent is working…
+                            </div>
+                        </div>
+
+                        <div class="oc-composer">
+                            <textarea x-ref="draft" rows="1" placeholder="Ask the agent to build something…"
+                                      x-model="draft" @keydown.enter.prevent="draft.trim() && send()"
+                                      @input="autosize()"></textarea>
+                            <button class="oc-send" x-show="!isBusy" @click="send()"
+                                    :disabled="!draft.trim()">Send</button>
+                            <button class="oc-stop" x-show="isBusy" @click="abort()">Stop</button>
+                        </div>
+                    </div>
+                </template>
+            </main>
+        </div>
+    </template>
+</div>
